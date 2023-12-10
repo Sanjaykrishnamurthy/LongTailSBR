@@ -37,9 +37,9 @@ class GatingNetwork(nn.Module):
         combined_tensor = gate * tensor1 + (1 - gate) * tensor2
         return combined_tensor
     
-class SASRec(torch.nn.Module):
+class CLTSBR(torch.nn.Module):
     def __init__(self, user_num, item_num, args):
-        super(SASRec, self).__init__()
+        super(CLTSBR, self).__init__()
         self.sess_emb_dict = torch.randn(user_num, args.hidden_units, device=args.device)
         self.user_num = user_num
         self.item_num = item_num
