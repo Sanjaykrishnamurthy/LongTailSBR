@@ -74,11 +74,15 @@ class CLTSBR(torch.nn.Module):
             self.forward_layers.append(new_fwd_layer)
             
 
-    def log2feats(self, log_seqs):
+    def log2feats(self, log_seqs, seq_pop):
         seqs = self.item_emb(torch.LongTensor(log_seqs).to(self.dev))
         seqs *= self.item_emb.embedding_dim ** 0.5
         positions = np.tile(np.array(range(log_seqs.shape[1])), [log_seqs.shape[0], 1])
         seqs += self.pos_emb(torch.LongTensor(positions).to(self.dev))
+        seq_pop = torch.FloatTensor(seq_pop).to(self.dev)
+        seq_pop = seq_pop * torch.ones_like(seqs)
+        seqs += seq_pop
+        
         seqs = self.emb_dropout(seqs)
 
         timeline_mask = torch.BoolTensor(log_seqs == 0).to(self.dev)
@@ -103,8 +107,8 @@ class CLTSBR(torch.nn.Module):
 
         return log_feats
 
-    def forward(self, user_ids, log_seqs, pos_seqs, neg_seqs, n_sess):   
-        log_feats = self.log2feats(log_seqs) 
+    def forward(self, user_ids, log_seqs, pos_seqs, neg_seqs, n_sess, seq_pop):   
+        log_feats = self.log2feats(log_seqs, seq_pop) 
         self.sess_emb_dict[user_ids] = log_feats.sum(dim=1) 
         top_neighbor_feats = self.sess_emb_dict[n_sess] 
         log_feats = log_feats.transpose(0, 1) 
